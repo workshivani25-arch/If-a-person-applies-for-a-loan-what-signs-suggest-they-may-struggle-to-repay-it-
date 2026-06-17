@@ -75,11 +75,9 @@ This project will include SQL scripts that move from beginner to advanced:
 9. Funnel queries for application and model-stage reporting.
 10. Advanced analytical queries for cohort analysis and model monitoring.
 
-The aim is that every SQL file should be readable enough for a beginner, but strong enough to show professional analytics thinking.
+
 
 ## Tableau Dashboard Plan
-
-The Tableau dashboard will be designed for a banking stakeholder, not just for decoration.
 
 Planned dashboard pages:
 
