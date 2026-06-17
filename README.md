@@ -28,22 +28,34 @@ Example business questions:
 | Tableau | Final dashboard, funnel charts, risk segments, trend analysis, stakeholder visuals | dashboard design, calculated fields, parameters, filters |
 | GitHub | Project documentation, clean repo structure, reproducible workflow | communication, version control, portfolio presentation |
 
+
 ## Portfolio Flow
 
 ```mermaid
-flowchart LR
-    A["Business Problem<br/>Define loan risk and banking decisions"]
-    B["Data Sources<br/>Kaggle borrower data + Australian market data"]
-    C["Data Cleaning<br/>Missing values, duplicates, outliers, messy categories"]
-    D["SQL Analysis<br/>Data checks, joins, risk segments, funnel queries"]
-    E["Python EDA<br/>Default patterns, borrower stress, affordability"]
-    F["Funnel Analysis<br/>Application, data quality, and model decision flow"]
-    G["Feature Engineering<br/>Debt burden, income stability, repayment pressure"]
-    H["Machine Learning<br/>Default-risk classification models"]
-    I["Explainability<br/>Risk drivers explained in business language"]
-    J["Tableau Dashboard<br/>Executive visuals and banking recommendations"]
+flowchart TD
+    A["Business Problem: define loan risk"]
+    B["Data Sources: Kaggle and Australian market data"]
+    C["Data Cleaning: missing values, duplicates, outliers"]
+    D["SQL Analysis: checks, joins, segments, funnels"]
+    E["Python EDA: default patterns and borrower stress"]
+    F["Funnel Analysis: application and model decision flow"]
+    G["Feature Engineering: affordability and repayment pressure"]
+    H["Machine Learning: default risk prediction"]
+    I["Explainability: risk drivers in business language"]
+    J["Tableau Dashboard: visuals and recommendations"]
 
-    A --> B --> C --> D --> E --> F --> G --> H --> I --> J
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+```
+
+## Project Layers
 
 ## Project Layers
 
