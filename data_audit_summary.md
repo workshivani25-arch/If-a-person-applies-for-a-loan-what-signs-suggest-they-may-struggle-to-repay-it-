@@ -1,13 +1,14 @@
 # Data Audit Summary
 
-## Kaggle Home Credit Files
+Download instructions are documented in [kaggle_home_credit_download.md](kaggle_home_credit_download.md).
+## Australian Context, Purpose and Source  of the Data
 
-All expected Kaggle Home Credit files are available locally in:
-
-```text
-data/raw/kaggle_home_credit/
-```
-
+| Data Source | Purpose | Use In Project |
+|---|---|---|
+| ABS Lending Indicators | Adds Australian lending context. Useful for showing housing loan commitments, investor lending, owner-occupier lending, and first-home buyer trends. | Trend charts in Python and Tableau. Australian market context section in final report. |
+| APRA ADI Statistics | Adds Australian banking and mortgage exposure context. Useful for discussing residential mortgage exposure and lending standards. | Banking-sector framing. Risk commentary and market context charts. |
+| RBA Statistical Tables | Adds interest-rate, housing credit, and household finance context. | Interest-rate pressure analysis. Housing credit trend analysis. Tableau market context dashboard. |
+| NSW Property Sales or Rental Bond Data | Adds housing affordability or rental-pressure context if needed. | Optional postcode or region-level housing stress analysis. Optional Tableau map or suburb comparison. |
 ## Raw Table Inventory
 
 | File | Rows | Columns | Size MB |
