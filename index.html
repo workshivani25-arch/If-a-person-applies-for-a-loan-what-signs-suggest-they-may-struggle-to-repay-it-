@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Australian Mortgage Loan Risk Dashboard</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d9e1ec;
+      --panel: #ffffff;
+      --canvas: #f5f7fb;
+      --navy: #12324a;
+      --blue: #2f6f9f;
+      --teal: #3a9a8f;
+      --risk: #b4233b;
+      --amber: #c27803;
+      --green: #287a52;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--canvas);
+      color: var(--ink);
+    }
+    .shell {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      max-width: 820px;
+      line-height: 1.45;
+    }
+    .badge {
+      background: #e8f0f7;
+      color: var(--navy);
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    select {
+      width: 100%;
+      appearance: none;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .card, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 28px rgba(18, 50, 74, 0.06);
+    }
+    .card {
+      padding: 16px;
+      min-height: 104px;
+    }
+    .metric {
+      font-size: 28px;
+      font-weight: 850;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .metric-label {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .panel {
+      padding: 18px;
+      min-height: 360px;
+    }
+    .panel h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+    .panel p {
+      color: var(--muted);
+      margin: 0 0 16px;
+      line-height: 1.4;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 72px;
+      gap: 10px;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .bar-track {
+      height: 24px;
+      background: #edf2f7;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar {
+      height: 100%;
+      min-width: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--navy));
+    }
+    .bar.risk { background: linear-gradient(90deg, #6aaed6, var(--risk)); }
+    .bar.teal { background: linear-gradient(90deg, #9ad7cf, var(--teal)); }
+    .value {
+      text-align: right;
+      font-weight: 800;
+      color: var(--navy);
+    }
+    .insight-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .insight {
+      border-left: 4px solid var(--blue);
+      background: #f8fbfe;
+      padding: 12px;
+      border-radius: 4px;
+      line-height: 1.4;
+    }
+    .insight strong { color: var(--navy); }
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .tile {
+      border: 1px solid var(--line);
+      padding: 12px;
+      border-radius: 6px;
+      background: #fbfdff;
+    }
+    .tile .small { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+    .tile .big { font-size: 20px; font-weight: 850; color: var(--navy); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px) {
+      .topbar, .grid { grid-template-columns: 1fr; display: grid; }
+      .filters { grid-template-columns: repeat(2, 1fr); }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 620px) {
+      .shell { padding: 16px; }
+      .filters, .kpis, .matrix { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .value { text-align: left; }
+      h1 { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="topbar">
+      <div>
+        <h1>Australian Mortgage Loan Risk Dashboard</h1>
+        <div class="subtitle">Interactive senior-analyst dashboard built from cleaned Kaggle Home Credit data. Use the filters to inspect risk concentration, repayment pressure, and manual-review segments.</div>
+      </div>
+      <div class="badge">Portfolio Dashboard</div>
+    </section>
+
+    <section class="filters" id="filters"></section>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Risk Segmentation</h2>
+        <p>Default rate and applicant volume by rule-based risk band.</p>
+        <div id="riskChart"></div>
+      </div>
+      <div class="panel">
+        <h2>Executive Insights</h2>
+        <p>Auto-updated interpretation from the selected segment.</p>
+        <div id="insights" class="insight-list"></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Income Band Risk</h2>
+        <p>Default rate by income band under the current filter selection.</p>
+        <div id="incomeChart"></div>
+      </div>
+      <div class="panel">
+        <h2>Repayment Burden</h2>
+        <p>Risk movement across repayment burden groups.</p>
+        <div id="burdenChart"></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Applicant Funnel</h2>
+        <p>Portfolio movement from raw applications into the manual-review population.</p>
+        <div id="funnelChart"></div>
+      </div>
+      <div class="panel">
+        <h2>Manual Review Decision View</h2>
+        <p>Comparison of manual-review and standard-review populations.</p>
+        <div id="reviewTable"></div>
+        <div class="footer-note">Manual review is defined as high rule-based risk, repayment burden at or above 30%, or loan-to-income ratio at or above 6.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const payload = {"kpi": {"applicants": 307511, "defaults": 24825, "default_rate": 8.07, "manual_review": 97671, "manual_review_percent": 31.76, "avg_loan": 599026.0, "avg_income": 168797.92, "avg_burden": 0.1809}, "cube": [{"risk_band": "High", "income_band": "100k to 150k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 9059, "defaults": 751, "avg_income": 122172.2, "avg_loan": 1023749.39, "avg_burden": 0.3643, "avg_lti": 8.4, "default_rate": 8.29}, {"risk_band": "High", "income_band": "100k to 150k", "repayment_burden_band": "Low burden", "manual_review_group": "Manual review", "applicants": 933, "defaults": 214, "avg_income": 124769.75, "avg_loan": 441487.83, "avg_burden": 0.1325, "avg_lti": 3.53, "default_rate": 22.94}, {"risk_band": "High", "income_band": "100k to 150k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 23022, "defaults": 2818, "avg_income": 124271.29, "avg_loan": 776383.05, "avg_burden": 0.2335, "avg_lti": 6.24, "default_rate": 12.24}, {"risk_band": "High", "income_band": "150k+", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 3777, "defaults": 244, "avg_income": 182534.62, "avg_loan": 1339048.05, "avg_burden": 0.3513, "avg_lti": 7.4, "default_rate": 6.46}, {"risk_band": "High", "income_band": "150k+", "repayment_burden_band": "Low burden", "manual_review_group": "Manual review", "applicants": 2373, "defaults": 538, "avg_income": 222214.91, "avg_loan": 863424.69, "avg_burden": 0.1311, "avg_lti": 3.86, "default_rate": 22.67}, {"risk_band": "High", "income_band": "150k+", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 22885, "defaults": 2419, "avg_income": 195082.17, "avg_loan": 1189831.75, "avg_burden": 0.2185, "avg_lti": 6.12, "default_rate": 10.57}, {"risk_band": "High", "income_band": "30k to 60k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 3336, "defaults": 308, "avg_income": 47889.92, "avg_loan": 495431.58, "avg_burden": 0.4579, "avg_lti": 10.42, "default_rate": 9.23}, {"risk_band": "High", "income_band": "30k to 60k", "repayment_burden_band": "Low burden", "manual_review_group": "Manual review", "applicants": 45, "defaults": 8, "avg_income": 51060.0, "avg_loan": 145869.1, "avg_burden": 0.1376, "avg_lti": 2.87, "default_rate": 17.78}, {"risk_band": "High", "income_band": "30k to 60k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 1366, "defaults": 145, "avg_income": 49537.76, "avg_loan": 271331.01, "avg_burden": 0.2479, "avg_lti": 5.48, "default_rate": 10.61}, {"risk_band": "High", "income_band": "60k to 100k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 11651, "defaults": 1127, "avg_income": 80603.03, "avg_loan": 742992.44, "avg_burden": 0.3896, "avg_lti": 9.25, "default_rate": 9.67}, {"risk_band": "High", "income_band": "60k to 100k", "repayment_burden_band": "Low burden", "manual_review_group": "Manual review", "applicants": 527, "defaults": 108, "avg_income": 83044.81, "avg_loan": 262978.99, "avg_burden": 0.1329, "avg_lti": 3.15, "default_rate": 20.49}, {"risk_band": "High", "income_band": "60k to 100k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 12116, "defaults": 1510, "avg_income": 83832.42, "avg_loan": 514143.28, "avg_burden": 0.2427, "avg_lti": 6.11, "default_rate": 12.46}, {"risk_band": "High", "income_band": "Under 30k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 98, "defaults": 7, "avg_income": 27810.55, "avg_loan": 358552.84, "avg_burden": 0.5657, "avg_lti": 12.95, "default_rate": 7.14}, {"risk_band": "High", "income_band": "Under 30k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 14, "defaults": 0, "avg_income": 27628.07, "avg_loan": 144744.43, "avg_burden": 0.2441, "avg_lti": 5.21, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "100k to 150k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 18, "defaults": 0, "avg_income": 125743.75, "avg_loan": 395136.0, "avg_burden": 0.3226, "avg_lti": 3.13, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "100k to 150k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 22074, "defaults": 1057, "avg_income": 124823.83, "avg_loan": 225891.98, "avg_burden": 0.1005, "avg_lti": 1.81, "default_rate": 4.79}, {"risk_band": "Low", "income_band": "100k to 150k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 6421, "defaults": 260, "avg_income": 124424.19, "avg_loan": 305263.49, "avg_burden": 0.1859, "avg_lti": 2.45, "default_rate": 4.05}, {"risk_band": "Low", "income_band": "100k to 150k", "repayment_burden_band": "Unknown", "manual_review_group": "Standard review", "applicants": 1, "defaults": 0, "avg_income": 144000.0, "avg_loan": 219249.0, "avg_burden": NaN, "avg_lti": 1.52, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "150k+", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 51, "defaults": 0, "avg_income": 204088.24, "avg_loan": 626151.18, "avg_burden": 0.3132, "avg_lti": 3.06, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "150k+", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 58517, "defaults": 3055, "avg_income": 264815.13, "avg_loan": 479483.92, "avg_burden": 0.0928, "avg_lti": 1.86, "default_rate": 5.22}, {"risk_band": "Low", "income_band": "150k+", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 1, "defaults": 0, "avg_income": 162000.0, "avg_loan": 497520.0, "avg_burden": 0.3, "avg_lti": 3.07, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "150k+", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 9599, "defaults": 352, "avg_income": 224759.11, "avg_loan": 593239.92, "avg_burden": 0.1814, "avg_lti": 2.64, "default_rate": 3.67}, {"risk_band": "Low", "income_band": "150k+", "repayment_burden_band": "Unknown", "manual_review_group": "Standard review", "applicants": 7, "defaults": 0, "avg_income": 198642.86, "avg_loan": 507349.93, "avg_burden": NaN, "avg_lti": 2.66, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "30k to 60k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 4, "defaults": 0, "avg_income": 45562.5, "avg_loan": 143995.5, "avg_burden": 0.3158, "avg_lti": 3.16, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "30k to 60k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 769, "defaults": 33, "avg_income": 50889.55, "avg_loan": 91893.97, "avg_burden": 0.1181, "avg_lti": 1.81, "default_rate": 4.29}, {"risk_band": "Low", "income_band": "30k to 60k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 662, "defaults": 14, "avg_income": 50447.31, "avg_loan": 124009.64, "avg_burden": 0.1912, "avg_lti": 2.45, "default_rate": 2.11}, {"risk_band": "Low", "income_band": "60k to 100k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 35, "defaults": 0, "avg_income": 81128.57, "avg_loan": 247667.91, "avg_burden": 0.3116, "avg_lti": 3.06, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "60k to 100k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 9727, "defaults": 380, "avg_income": 83612.31, "avg_loan": 157198.32, "avg_burden": 0.1095, "avg_lti": 1.88, "default_rate": 3.91}, {"risk_band": "Low", "income_band": "60k to 100k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 1, "defaults": 0, "avg_income": 67500.0, "avg_loan": 254700.0, "avg_burden": 0.3, "avg_lti": 3.77, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "60k to 100k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 4320, "defaults": 134, "avg_income": 82705.59, "avg_loan": 213945.14, "avg_burden": 0.1904, "avg_lti": 2.58, "default_rate": 3.1}, {"risk_band": "Low", "income_band": "60k to 100k", "repayment_burden_band": "Unknown", "manual_review_group": "Standard review", "applicants": 2, "defaults": 0, "avg_income": 92250.0, "avg_loan": 303750.0, "avg_burden": NaN, "avg_lti": 3.26, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "Under 30k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 1, "defaults": 0, "avg_income": 27900.0, "avg_loan": 53910.0, "avg_burden": 0.1032, "avg_lti": 1.93, "default_rate": 0.0}, {"risk_band": "Low", "income_band": "Under 30k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 5, "defaults": 0, "avg_income": 27675.0, "avg_loan": 66240.0, "avg_burden": 0.1767, "avg_lti": 2.37, "default_rate": 0.0}, {"risk_band": "Medium", "income_band": "100k to 150k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 936, "defaults": 38, "avg_income": 125793.03, "avg_loan": 508717.16, "avg_burden": 0.3409, "avg_lti": 4.06, "default_rate": 4.06}, {"risk_band": "Medium", "income_band": "100k to 150k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 9937, "defaults": 1248, "avg_income": 124629.16, "avg_loan": 328111.23, "avg_burden": 0.12, "avg_lti": 2.63, "default_rate": 12.56}, {"risk_band": "Medium", "income_band": "100k to 150k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 966, "defaults": 23, "avg_income": 123247.53, "avg_loan": 780491.42, "avg_burden": 0.207, "avg_lti": 6.32, "default_rate": 2.38}, {"risk_band": "Medium", "income_band": "100k to 150k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 18224, "defaults": 1485, "avg_income": 124975.03, "avg_loan": 473975.17, "avg_burden": 0.2004, "avg_lti": 3.79, "default_rate": 8.15}, {"risk_band": "Medium", "income_band": "150k+", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 1066, "defaults": 34, "avg_income": 212081.51, "avg_loan": 814622.33, "avg_burden": 0.3353, "avg_lti": 3.86, "default_rate": 3.19}, {"risk_band": "Medium", "income_band": "150k+", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 24831, "defaults": 2931, "avg_income": 235854.31, "avg_loan": 721962.47, "avg_burden": 0.1192, "avg_lti": 3.04, "default_rate": 11.8}, {"risk_band": "Medium", "income_band": "150k+", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 1764, "defaults": 38, "avg_income": 214337.39, "avg_loan": 1374367.39, "avg_burden": 0.1993, "avg_lti": 6.42, "default_rate": 2.15}, {"risk_band": "Medium", "income_band": "150k+", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 27349, "defaults": 2095, "avg_income": 209602.9, "avg_loan": 824663.46, "avg_burden": 0.1931, "avg_lti": 3.93, "default_rate": 7.66}, {"risk_band": "Medium", "income_band": "150k+", "repayment_burden_band": "Unknown", "manual_review_group": "Standard review", "applicants": 2, "defaults": 0, "avg_income": 258750.0, "avg_loan": 1206159.75, "avg_burden": NaN, "avg_lti": 4.65, "default_rate": 0.0}, {"risk_band": "Medium", "income_band": "30k to 60k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 292, "defaults": 10, "avg_income": 48231.06, "avg_loan": 192617.58, "avg_burden": 0.3427, "avg_lti": 3.97, "default_rate": 3.42}, {"risk_band": "Medium", "income_band": "30k to 60k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 395, "defaults": 31, "avg_income": 50521.83, "avg_loan": 123905.13, "avg_burden": 0.1324, "avg_lti": 2.46, "default_rate": 7.85}, {"risk_band": "Medium", "income_band": "30k to 60k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 28, "defaults": 0, "avg_income": 50392.93, "avg_loan": 313349.14, "avg_burden": 0.2367, "avg_lti": 6.21, "default_rate": 0.0}, {"risk_band": "Medium", "income_band": "30k to 60k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 1514, "defaults": 81, "avg_income": 50263.38, "avg_loan": 183953.23, "avg_burden": 0.218, "avg_lti": 3.65, "default_rate": 5.35}, {"risk_band": "Medium", "income_band": "60k to 100k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 973, "defaults": 37, "avg_income": 78336.49, "avg_loan": 291987.18, "avg_burden": 0.3349, "avg_lti": 3.72, "default_rate": 3.8}, {"risk_band": "Medium", "income_band": "60k to 100k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 5147, "defaults": 530, "avg_income": 83116.39, "avg_loan": 210438.88, "avg_burden": 0.1244, "avg_lti": 2.53, "default_rate": 10.3}, {"risk_band": "Medium", "income_band": "60k to 100k", "repayment_burden_band": "Medium burden", "manual_review_group": "Manual review", "applicants": 327, "defaults": 12, "avg_income": 86004.57, "avg_loan": 544702.17, "avg_burden": 0.2162, "avg_lti": 6.34, "default_rate": 3.67}, {"risk_band": "Medium", "income_band": "60k to 100k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 10320, "defaults": 749, "avg_income": 82446.26, "avg_loan": 292289.92, "avg_burden": 0.2082, "avg_lti": 3.55, "default_rate": 7.26}, {"risk_band": "Medium", "income_band": "Under 30k", "repayment_burden_band": "High burden", "manual_review_group": "Manual review", "applicants": 7, "defaults": 0, "avg_income": 28028.57, "avg_loan": 122576.79, "avg_burden": 0.3299, "avg_lti": 4.38, "default_rate": 0.0}, {"risk_band": "Medium", "income_band": "Under 30k", "repayment_burden_band": "Low burden", "manual_review_group": "Standard review", "applicants": 2, "defaults": 0, "avg_income": 27000.0, "avg_loan": 53955.0, "avg_burden": 0.1386, "avg_lti": 2.0, "default_rate": 0.0}, {"risk_band": "Medium", "income_band": "Under 30k", "repayment_burden_band": "Medium burden", "manual_review_group": "Standard review", "applicants": 14, "defaults": 1, "avg_income": 28213.07, "avg_loan": 102509.36, "avg_burden": 0.2325, "avg_lti": 3.65, "default_rate": 7.14}], "funnel": [{"stage_order": 1, "stage": "Raw applications", "applicants": 307511, "percent_of_raw": 100.0}, {"stage_order": 2, "stage": "Valid target", "applicants": 307511, "percent_of_raw": 100.0}, {"stage_order": 3, "stage": "Income and loan present", "applicants": 307511, "percent_of_raw": 100.0}, {"stage_order": 4, "stage": "Model-ready", "applicants": 307499, "percent_of_raw": 100.0}, {"stage_order": 5, "stage": "Manual review", "applicants": 97671, "percent_of_raw": 31.76}], "filters": {"risk_band": ["All", "High", "Low", "Medium"], "income_band": ["All", "100k to 150k", "150k+", "30k to 60k", "60k to 100k", "Under 30k"], "repayment_burden_band": ["All", "Low burden", "Medium burden", "High burden", "Unknown"], "manual_review_group": ["All", "Manual review", "Standard review"]}};
+    const filterConfig = [
+      ["risk_band", "Risk band"],
+      ["income_band", "Income band"],
+      ["repayment_burden_band", "Repayment burden"],
+      ["manual_review_group", "Review group"]
+    ];
+    const state = Object.fromEntries(filterConfig.map(([key]) => [key, "All"]));
+
+    function fmtNumber(value) {
+      return Number(value || 0).toLocaleString("en-AU");
+    }
+    function fmtCurrency(value) {
+      return "$" + Math.round(Number(value || 0)).toLocaleString("en-AU");
+    }
+    function fmtPct(value) {
+      return Number(value || 0).toFixed(2) + "%";
+    }
+    function filteredRows() {
+      return payload.cube.filter(row =>
+        filterConfig.every(([key]) => state[key] === "All" || row[key] === state[key])
+      );
+    }
+    function weightedAvg(rows, valueKey, weightKey = "applicants") {
+      const denom = rows.reduce((sum, row) => sum + Number(row[weightKey] || 0), 0);
+      if (!denom) return 0;
+      return rows.reduce((sum, row) => sum + Number(row[valueKey] || 0) * Number(row[weightKey] || 0), 0) / denom;
+    }
+    function aggregate(rows) {
+      const applicants = rows.reduce((sum, row) => sum + Number(row.applicants || 0), 0);
+      const defaults = rows.reduce((sum, row) => sum + Number(row.defaults || 0), 0);
+      return {
+        applicants,
+        defaults,
+        defaultRate: applicants ? defaults / applicants * 100 : 0,
+        avgLoan: weightedAvg(rows, "avg_loan"),
+        avgIncome: weightedAvg(rows, "avg_income"),
+        avgBurden: weightedAvg(rows, "avg_burden")
+      };
+    }
+    function groupBy(rows, key) {
+      const map = new Map();
+      rows.forEach(row => {
+        const label = row[key] || "Unknown";
+        if (!map.has(label)) map.set(label, []);
+        map.get(label).push(row);
+      });
+      return Array.from(map, ([label, grouped]) => {
+        const agg = aggregate(grouped);
+        return { label, ...agg };
+      });
+    }
+    function renderFilters() {
+      const root = document.getElementById("filters");
+      root.innerHTML = filterConfig.map(([key, label]) => `
+        <div>
+          <label for="${key}">${label}</label>
+          <select id="${key}">
+            ${payload.filters[key].map(option => `<option value="${option}">${option}</option>`).join("")}
+          </select>
+        </div>
+      `).join("");
+      filterConfig.forEach(([key]) => {
+        document.getElementById(key).addEventListener("change", event => {
+          state[key] = event.target.value;
+          renderDashboard();
+        });
+      });
+    }
+    function renderKpis(rows) {
+      const agg = aggregate(rows);
+      const cards = [
+        ["Applicants", fmtNumber(agg.applicants)],
+        ["Defaults", fmtNumber(agg.defaults)],
+        ["Default Rate", fmtPct(agg.defaultRate)],
+        ["Avg Loan", fmtCurrency(agg.avgLoan)],
+        ["Avg Burden", fmtPct(agg.avgBurden * 100)]
+      ];
+      document.getElementById("kpis").innerHTML = cards.map(([label, value]) => `
+        <div class="card">
+          <div class="metric">${value}</div>
+          <div class="metric-label">${label}</div>
+        </div>
+      `).join("");
+    }
+    function renderBars(id, rows, options = {}) {
+      const valueKey = options.valueKey || "defaultRate";
+      const label = options.label || "Default rate";
+      const maxValue = Math.max(...rows.map(row => Number(row[valueKey] || 0)), 1);
+      document.getElementById(id).innerHTML = rows.map(row => {
+        const value = Number(row[valueKey] || 0);
+        const width = Math.max(value / maxValue * 100, 1);
+        const countText = options.showCount ? ` · ${fmtNumber(row.applicants)} applicants` : "";
+        return `
+          <div class="bar-row" title="${row.label}: ${fmtPct(value)}${countText}">
+            <div>${row.label}</div>
+            <div class="bar-track"><div class="bar ${options.className || ""}" style="width:${width}%"></div></div>
+            <div class="value">${fmtPct(value)}</div>
+          </div>
+        `;
+      }).join("") + `<div class="footer-note">${label} shown for the selected filters.</div>`;
+    }
+    function renderFunnel() {
+      const max = Math.max(...payload.funnel.map(row => row.applicants));
+      document.getElementById("funnelChart").innerHTML = payload.funnel.map(row => `
+        <div class="bar-row" title="${row.stage}: ${fmtNumber(row.applicants)} applicants">
+          <div>${row.stage}</div>
+          <div class="bar-track"><div class="bar teal" style="width:${row.applicants / max * 100}%"></div></div>
+          <div class="value">${fmtNumber(row.applicants)}</div>
+        </div>
+      `).join("");
+    }
+    function renderReview(rows) {
+      const groups = groupBy(rows, "manual_review_group").sort((a, b) => b.defaultRate - a.defaultRate);
+      document.getElementById("reviewTable").innerHTML = `
+        <table>
+          <thead><tr><th>Group</th><th>Applicants</th><th>Defaults</th><th>Default Rate</th></tr></thead>
+          <tbody>
+            ${groups.map(row => `
+              <tr>
+                <td>${row.label}</td>
+                <td>${fmtNumber(row.applicants)}</td>
+                <td>${fmtNumber(row.defaults)}</td>
+                <td><strong>${fmtPct(row.defaultRate)}</strong></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+    function renderInsights(rows) {
+      const agg = aggregate(rows);
+      const riskRows = groupBy(rows, "risk_band").sort((a, b) => b.defaultRate - a.defaultRate);
+      const topRisk = riskRows[0] || { label: "N/A", defaultRate: 0, applicants: 0 };
+      const selectedText = filterConfig
+        .filter(([key]) => state[key] !== "All")
+        .map(([_, label]) => label)
+        .join(", ") || "full portfolio";
+      document.getElementById("insights").innerHTML = `
+        <div class="insight"><strong>Selected view:</strong> ${selectedText} contains ${fmtNumber(agg.applicants)} applicants with a ${fmtPct(agg.defaultRate)} default rate.</div>
+        <div class="insight"><strong>Highest visible risk:</strong> ${topRisk.label} has the strongest default concentration in the current filter view.</div>
+        <div class="insight"><strong>Credit policy angle:</strong> use this page to identify groups that may need manual review, affordability checks, or closer repayment-burden monitoring.</div>
+        <div class="matrix">
+          <div class="tile"><div class="small">Average Income</div><div class="big">${fmtCurrency(agg.avgIncome)}</div></div>
+          <div class="tile"><div class="small">Average Loan</div><div class="big">${fmtCurrency(agg.avgLoan)}</div></div>
+          <div class="tile"><div class="small">Avg Burden</div><div class="big">${fmtPct(agg.avgBurden * 100)}</div></div>
+        </div>
+      `;
+    }
+    function renderDashboard() {
+      const rows = filteredRows();
+      renderKpis(rows);
+      renderBars("riskChart", groupBy(rows, "risk_band").sort((a, b) => ["Low", "Medium", "High"].indexOf(a.label) - ["Low", "Medium", "High"].indexOf(b.label)), { className: "risk", showCount: true });
+      renderBars("incomeChart", groupBy(rows, "income_band").sort((a, b) => b.defaultRate - a.defaultRate), { showCount: true });
+      renderBars("burdenChart", groupBy(rows, "repayment_burden_band").sort((a, b) => b.defaultRate - a.defaultRate), { className: "teal", showCount: true });
+      renderFunnel();
+      renderReview(rows);
+      renderInsights(rows);
+    }
+    renderFilters();
+    renderDashboard();
+  </script>
+</body>
+</html>
